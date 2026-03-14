@@ -41,15 +41,14 @@ mkdir -p "$out/lib/openclaw" "$out/bin"
 
 # Build dir is ephemeral in Nix; moving avoids an expensive deep copy of node_modules.
 log_step "move build outputs" mv dist node_modules package.json "$out/lib/openclaw/"
+
+# Copy the full source tree so extensions can resolve their imports
+if [ -d src ]; then
+  log_step "copy src" cp -r src "$out/lib/openclaw/"
+fi
+
 if [ -d extensions ]; then
-  mkdir -p "$out/lib/openclaw/extensions"
-  for ext in extensions/*/; do
-    if ! grep -rq '"\.\./\.\./\.\./src/' "$ext" 2>/dev/null; then
-      log_step "copy extension $(basename "$ext")" cp -r "$ext" "$out/lib/openclaw/extensions/"
-    else
-      log_step "skip extension $(basename "$ext") (compiled into dist)"
-    fi
-  done
+  log_step "copy extensions" cp -r extensions "$out/lib/openclaw/"
 fi
 
 if [ -d skills ]; then
