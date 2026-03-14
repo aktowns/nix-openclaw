@@ -47,6 +47,11 @@ if [ -d src ]; then
   log_step "copy src" cp -r src "$out/lib/openclaw/"
 fi
 
+if [ -d apps ]; then
+  mkdir -p "$out/lib/openclaw/apps/"
+  log_step "copy apps/shared" cp -r apps/shared "$out/lib/openclaw/apps/"
+fi
+
 if [ -d extensions ]; then
   log_step "copy extensions" cp -r extensions "$out/lib/openclaw/"
 fi
