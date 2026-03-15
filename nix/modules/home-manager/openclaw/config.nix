@@ -324,7 +324,7 @@ in
       ${lib.concatMapStringsSep "\n" (item: ''
         cat > "${item.stableWrapperPath}" << 'EOF'
         #!/bin/bash
-        exec "${item.gatewayWrapperBin}" "$@"
+        "${item.gatewayWrapperBin}" "$@"
         EOF
         chmod +x "${item.stableWrapperPath}"
       '') instanceConfigs}
