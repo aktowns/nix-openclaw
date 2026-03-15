@@ -322,11 +322,11 @@ in
 
     home.activation.openclawStableWrappers = lib.hm.dag.entryAfter [ "openclawDirs" ] ''
       ${lib.concatMapStringsSep "\n" (item: ''
-        run cat > "${item.stableWrapperPath}" << 'EOF'
+        cat > "${item.stableWrapperPath}" << 'EOF'
         #!/bin/bash
         exec "${item.gatewayWrapperBin}" "$@"
         EOF
-        run chmod +x "${item.stableWrapperPath}"
+        chmod +x "${item.stableWrapperPath}"
       '') instanceConfigs}
     '';
 
