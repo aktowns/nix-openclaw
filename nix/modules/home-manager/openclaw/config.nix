@@ -169,6 +169,8 @@ let
           };
 
       package = gatewayPackage;
+      stableWrapperPath = "${inst.stateDir}/bin/openclaw-gateway-${name}";
+      gatewayWrapperBin = "${gatewayWrapper}/bin/openclaw-gateway-${name}";
     in
     {
       homeFile = {
@@ -184,6 +186,7 @@ let
         inst.stateDir
         inst.workspaceDir
         (builtins.dirOf inst.logPath)
+        "${inst.stateDir}/bin"
       ];
 
       launchdAgent = lib.optionalAttrs (pkgs.stdenv.hostPlatform.isDarwin && inst.launchd.enable) {
@@ -192,7 +195,7 @@ let
           config = {
             Label = inst.launchd.label;
             ProgramArguments = [
-              "${gatewayWrapper}/bin/openclaw-gateway-${name}"
+              stableWrapperPath
               "gateway"
               "--port"
               "${toString inst.gatewayPort}"
@@ -238,6 +241,8 @@ let
       appDefaults = appDefaults;
       appInstall = appInstall;
       package = package;
+      inherit stableWrapperPath;
+      inherit gatewayWrapperBin;
     };
 
   instanceConfigs = lib.mapAttrsToList mkInstanceConfig enabledInstances;
@@ -313,6 +318,16 @@ in
     home.activation.openclawPluginGuard = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       set -euo pipefail
       ${plugins.pluginGuards}
+    '';
+
+    home.activation.openclawStableWrappers = lib.hm.dag.entryAfter [ "openclawDirs" ] ''
+      ${lib.concatMapStringsSep "\n" (item: ''
+        run cat > "${item.stableWrapperPath}" << 'EOF'
+        #!/bin/bash
+        exec "${item.gatewayWrapperBin}" "$@"
+        EOF
+        run chmod +x "${item.stableWrapperPath}"
+      '') instanceConfigs}
     '';
 
     home.activation.openclawAppDefaults =
